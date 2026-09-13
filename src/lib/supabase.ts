@@ -1,10 +1,8 @@
 import { createServerClient, parseCookieHeader, type CookieOptions } from '@supabase/ssr';
 import type { AstroGlobal, APIContext } from 'astro';
 
-// Acepta AstroGlobal (en páginas/layouts) o APIContext (en middleware/endpoints)
 type AstroContext = AstroGlobal | APIContext;
 
-// Definición del tipo de objeto que entrega Supabase para las cookies
 interface CookieToSet {
   name: string;
   value: string;
@@ -12,11 +10,17 @@ interface CookieToSet {
 }
 
 export const createSupabaseServerClient = (context: AstroContext) => {
-  const env = (import.meta as any).env;
+  // Obtiene las variables primero de import.meta.env y de fallback process.env (Vercel SSR)
+  const supabaseUrl = import.meta.env.PUBLIC_SUPABASE_URL || process.env.PUBLIC_SUPABASE_URL;
+  const supabaseAnonKey = import.meta.env.PUBLIC_SUPABASE_ANON_KEY || process.env.PUBLIC_SUPABASE_ANON_KEY;
+
+  if (!supabaseUrl || !supabaseAnonKey) {
+    throw new Error('Las credenciales de Supabase no están definidas en las variables de entorno.');
+  }
 
   return createServerClient(
-    env.PUBLIC_SUPABASE_URL,
-    env.PUBLIC_SUPABASE_ANON_KEY,
+    supabaseUrl,
+    supabaseAnonKey,
     {
       cookies: {
         getAll() {
