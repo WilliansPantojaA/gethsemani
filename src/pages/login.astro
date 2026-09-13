@@ -27,7 +27,10 @@ import PublicLayout from '../layout/PublicLayout.astro';
             type="text" 
             id="dni" 
             name="dni" 
-            placeholder="54875484"
+            placeholder="87654321"
+            maxlength="8"
+            inputmode="numeric"
+            pattern="[0-9]{8}"
             required 
             class="w-full px-4 py-3 rounded-xl border border-gray-300 focus:ring-2 focus:ring-[#031530] focus:border-transparent outline-none transition text-sm bg-gray-50"
           />
@@ -67,7 +70,6 @@ import PublicLayout from '../layout/PublicLayout.astro';
 <script>
   import { createBrowserClient } from '@supabase/ssr';
 
-  // 1. Inicializar el cliente de Supabase para el navegador
   const supabase = createBrowserClient(
     import.meta.env.PUBLIC_SUPABASE_URL,
     import.meta.env.PUBLIC_SUPABASE_ANON_KEY
@@ -76,42 +78,60 @@ import PublicLayout from '../layout/PublicLayout.astro';
   const form = document.getElementById('loginForm') as HTMLFormElement;
   const alertBox = document.getElementById('error-alert') as HTMLDivElement;
   const btnSubmit = document.getElementById('btnSubmit') as HTMLButtonElement;
+  const dniInput = document.getElementById('dni') as HTMLInputElement;
+
+  // Bloquear tipeo de caracteres que no sean dígitos en tiempo real
+  if (dniInput) {
+    dniInput.addEventListener('input', (e) => {
+      const target = e.target as HTMLInputElement;
+      target.value = target.value.replace(/\D/g, '').slice(0, 8);
+    });
+  }
 
   if (form) {
     form.addEventListener('submit', async (e) => {
       e.preventDefault();
 
-      // UI: Mostrar estado de verificación
+      const dniVal = dniInput.value.trim();
+      const passwordInput = (document.getElementById('password') as HTMLInputElement).value.trim();
+
+      // Validación estricta: debe tener exactamente 8 dígitos
+      const dniRegex = /^\d{8}$/;
+      if (!dniRegex.test(dniVal)) {
+        if (alertBox) {
+          alertBox.innerText = 'El DNI debe tener exactamente 8 dígitos numéricos.';
+          alertBox.classList.remove('hidden');
+        }
+        return;
+      }
+
+      // UI: Estado de carga
       if (alertBox) alertBox.classList.add('hidden');
       if (btnSubmit) {
         btnSubmit.disabled = true;
         btnSubmit.innerText = 'Verificando...';
       }
 
-      // Capturar entradas
-      const dniInput = (document.getElementById('dni') as HTMLInputElement).value.trim();
-      const passwordInput = (document.getElementById('password') as HTMLInputElement).value.trim();
-
-      // Formatear DNI a correo interno de Supabase
-      const emailFormatted = `${dniInput}@gmail.com`;
+      const emailFormatted = `${dniVal}@gmail.com`;
 
       try {
-        // En src/pages/login.astro dentro del script del navegador:
+        const { error } = await supabase.auth.signInWithPassword({
+          email: emailFormatted,
+          password: passwordInput,
+        });
 
-const { data, error } = await supabase.auth.signInWithPassword({
-  email: emailFormatted,
-  password: passwordInput,
-});
-
-if (error) {
-  alertBox.innerText = 'Credenciales incorrectas o usuario no registrado.';
-  alertBox.classList.remove('hidden');
-  btnSubmit.disabled = false;
-  btnSubmit.innerText = 'Iniciar Sesión';
-} else {
-  // Sincronizar cookies y hacer redirección forzada de página
-  window.location.assign('/app');
-}
+        if (error) {
+          if (alertBox) {
+            alertBox.innerText = 'Credenciales incorrectas o usuario no registrado.';
+            alertBox.classList.remove('hidden');
+          }
+          if (btnSubmit) {
+            btnSubmit.disabled = false;
+            btnSubmit.innerText = 'Iniciar Sesión';
+          }
+        } else {
+          window.location.assign('/app');
+        }
       } catch (err) {
         if (alertBox) {
           alertBox.innerText = 'Error de conexión con el servidor de autenticación.';
