@@ -1,0 +1,207 @@
+---
+export const prerender = false;
+
+import AppLayout from '../../layout/AppLayout.astro';
+---
+
+<AppLayout>
+  <div class="space-y-6 max-w-6xl mx-auto">
+    
+    <!-- Encabezado -->
+    <div class="flex flex-col md:flex-row md:items-center md:justify-between gap-4 bg-white p-6 rounded-2xl shadow-sm border border-slate-200">
+      <div>
+        <div class="flex items-center gap-2 text-xs font-semibold text-slate-400 uppercase tracking-wider mb-1">
+          <span>Configuración</span>
+          <span class="text-xs">›</span>
+          <span class="text-[#031530] font-bold">Permisos</span>
+        </div>
+        <h1 class="text-2xl font-bold text-slate-800 tracking-tight flex items-center gap-2">
+          🛡️ Gestión de Permisos
+        </h1>
+        <p class="text-sm text-slate-500 mt-1">
+          Asigna de forma dinámica los accesos a los menús del sistema según el rol seleccionado.
+        </p>
+      </div>
+    </div>
+
+    <!-- Contenedor Principal -->
+    <div class="bg-white rounded-2xl shadow-sm border border-slate-200 p-6 space-y-6 card-body relative">
+      
+      <!-- Selector de Rol -->
+      <div class="flex flex-col md:flex-row md:items-center gap-4 bg-slate-50 p-4 rounded-xl border border-slate-200">
+        <label for="cboRol" class="block text-sm font-bold text-slate-700 md:w-1/4">
+          Seleccionar Rol del Sistema:
+        </label>
+        <div class="relative w-full md:w-3/4">
+          <select 
+            id="cboRol" 
+            class="block w-full border border-slate-300 rounded-xl px-4 py-2.5 bg-white text-slate-800 font-semibold focus:ring-2 focus:ring-[#031530] outline-none transition appearance-none shadow-sm cursor-pointer"
+          >
+            <option value="" disabled selected>Cargando roles...</option>
+          </select>
+          <div class="pointer-events-none absolute inset-y-0 right-0 flex items-center px-3.5 text-slate-400">
+            ▼
+          </div>
+        </div>
+      </div>
+
+      <hr class="border-slate-100" />
+
+      <!-- Tabla de Permisos -->
+      <div class="overflow-x-auto">
+        <table class="w-full text-left border-collapse" id="permiso">
+          <thead>
+            <tr class="border-b border-slate-200 bg-slate-50 text-slate-500 text-xs font-semibold uppercase tracking-wider">
+              <th class="py-3 px-4 text-center w-28">Activar</th>
+              <th class="py-3 px-4">Menú Principal</th>
+              <th class="py-3 px-4">SubMenú / Vista</th>
+            </tr>
+          </thead>
+          <tbody id="tablaPermisosBody" class="divide-y divide-slate-100 text-sm">
+            <tr>
+              <td colspan="3" class="py-8 text-center text-slate-400 font-medium">
+                Selecciona un rol en la parte superior para cargar los permisos.
+              </td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+
+    </div>
+
+  </div>
+</AppLayout>
+
+<script>
+  document.addEventListener('DOMContentLoaded', () => {
+    const cboRol = document.getElementById('cboRol') as HTMLSelectElement | null;
+    const tbody = document.getElementById('tablaPermisosBody') as HTMLTableSectionElement | null;
+
+    if (!cboRol || !tbody) return;
+
+    // 1. Cargar el combobox de Roles desde /api/rol
+    async function cargarRoles() {
+      try {
+        const response = await fetch('/api/rol');
+        const result = await response.json();
+
+        if (!result.success || !result.data) {
+          cboRol!.innerHTML = '<option value="" disabled selected>Error al cargar roles</option>';
+          return;
+        }
+
+        cboRol!.innerHTML = '<option value="" disabled selected>--- Seleccione un Rol para gestionar accesos ---</option>';
+
+        result.data
+          .filter((r: any) => r.estado === true)
+          .forEach((r: any) => {
+            const option = document.createElement('option');
+            option.value = String(r.idrol);
+            option.textContent = r.rol;
+            cboRol!.appendChild(option);
+          });
+      } catch (error) {
+        cboRol!.innerHTML = '<option value="" disabled selected>Error de conexión al obtener roles</option>';
+      }
+    }
+
+    cargarRoles();
+
+    // 2. Equivalente a tu: $('#cboRol').change(function(){ ... })
+    cboRol.addEventListener('change', async () => {
+      const idRol = cboRol.value;
+
+      if (!idRol) {
+        tbody.innerHTML = '<tr><td colspan="3" class="py-8 text-center text-slate-400 font-medium">Selecciona un rol en la parte superior para cargar los permisos.</td></tr>';
+        return;
+      }
+
+      tbody.innerHTML = '<tr><td colspan="3" class="py-6 text-center text-slate-500">Cargando permisos desde la BD...</td></tr>';
+
+      try {
+        const response = await fetch(`/api/permiso?idRol=${idRol}`);
+        const result = await response.json();
+
+        if (!result.success) {
+          tbody.innerHTML = `<tr><td colspan="3" class="py-6 text-center text-red-500 font-semibold">Error: ${result.message}</td></tr>`;
+          return;
+        }
+
+        if (!result.data || result.data.length === 0) {
+          tbody.innerHTML = '<tr><td colspan="3" class="py-6 text-center text-slate-400">No hay submenús registrados en la base de datos.</td></tr>';
+          return;
+        }
+
+        tbody.innerHTML = '';
+
+        // Renderizado equivalente a las columnas de tu DataTables
+        result.data.forEach((row: any) => {
+          const tr = document.createElement('tr');
+          tr.className = 'hover:bg-slate-50/80 transition';
+
+          const isChecked = row.seleccionado === 1 || row.seleccionado === true;
+
+          tr.innerHTML = `
+            <td class="py-3.5 px-4 text-center">
+              <div class="flex items-center justify-center">
+                <input 
+                  type="checkbox" 
+                  id="chk_${row.idsubmenu}" 
+                  class="submenu-check sr-only peer" 
+                  data-id="${row.idsubmenu}" 
+                  ${isChecked ? 'checked' : ''}
+                >
+                <label 
+                  for="chk_${row.idsubmenu}" 
+                  class="w-11 h-6 bg-slate-200 rounded-full cursor-pointer peer-focus:outline-none peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-slate-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-emerald-500 transition-all duration-200 relative block"
+                ></label>
+              </div>
+            </td>
+            <td class="py-3.5 px-4 font-semibold text-slate-700">${row.menu}</td>
+            <td class="py-3.5 px-4 text-slate-600">${row.submenu}</td>
+          `;
+
+          tbody.appendChild(tr);
+        });
+      } catch (error) {
+        tbody.innerHTML = '<tr><td colspan="3" class="py-6 text-center text-red-500">Error de conexión al obtener permisos.</td></tr>';
+      }
+    });
+
+    // 3. Equivalente a tu: $(document).on('change', '.submenu-check', function(){ ... })
+    tbody.addEventListener('change', async (e) => {
+      const target = e.target as HTMLInputElement;
+
+      if (target && target.classList.contains('submenu-check')) {
+        const idSubMenu = target.getAttribute('data-id');
+        const checked = target.checked;
+        const idRol = cboRol.value;
+
+        // Estructura idéntica a la que enviabas en C# / jQuery
+        const Permiso = {
+          oRol: { idRol: parseInt(idRol) },
+          oSubMenu: { idSubMenu: parseInt(idSubMenu || '0') },
+          seleccionado: checked
+        };
+
+        try {
+          const response = await fetch('/api/permiso', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json; charset=utf-8' },
+            body: JSON.stringify(Permiso)
+          });
+
+          const data = await response.json();
+
+          if (!data.resultado) {
+            alert(data.mensaje || 'No se pudo guardar el permiso');
+            target.checked = !checked; // Revertir check si falló
+          }
+        } catch (error) {
+          alert('No se pudo procesar la solicitud en el servidor.');
+          target.checked = !checked; // Revertir check si falló
+        }
+      }
+    });
+  });
+</script>

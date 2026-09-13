@@ -1,0 +1,61 @@
+---
+import PublicLayout from '../layout/PublicLayout.astro';
+---
+
+<PublicLayout title="Ubicación | IEP Gethsemani">
+  <section class="max-w-7xl mx-auto px-6 py-12 space-y-8">
+    <div class="space-y-2">
+      <span class="text-sky-400 text-xs font-bold uppercase tracking-widest">📍 ESTAMOS CERCA DE TI</span>
+      <h1 class="text-3xl md:text-5xl font-black text-white">Ven a conocernos en Puerto Sira</h1>
+    </div>
+
+    <div class="grid md:grid-cols-12 gap-8 items-stretch">
+      <!-- Datos actualizados con la Directora María Inca Paredes -->
+      <div class="md:col-span-5 bg-gradient-to-b from-[#0B3A6F] to-[#072140] p-8 rounded-3xl border border-sky-400/20 shadow-2xl flex flex-col justify-between space-y-6">
+        <div class="space-y-6">
+          <div>
+            <h2 class="font-black text-white text-xl mb-1">I.E.P. Gethsemani</h2>
+            <p class="text-xs text-yellow-400 font-bold uppercase tracking-wider">UGEL N° 306 Puerto Inca</p>
+          </div>
+
+          <div class="space-y-4 text-sm text-sky-100/80 border-t border-sky-500/20 pt-4">
+            <div>
+              <span class="font-bold text-white block">Dirección:</span>
+              <p>Centro Poblado Puerto Sira S/N, Distrito de Puerto Inca, Huánuco</p>
+            </div>
+
+            <div>
+              <span class="font-bold text-white block">Horarios y Niveles:</span>
+              <p>• Primaria: 8:00 a.m. - 1:00 p.m.</p>
+              <p>• Secundaria: 7:45 a.m. - 1:30 p.m.</p>
+            </div>
+
+            <div>
+              <span class="font-bold text-white block">Dirección General:</span>
+              <p class="text-yellow-400 font-semibold">Prof. María Inca Paredes</p>
+            </div>
+          </div>
+        </div>
+
+        <a 
+          href="https://wa.me/51900000000" 
+          target="_blank"
+          class="block w-full text-center py-3.5 rounded-2xl bg-emerald-500 hover:bg-emerald-400 text-slate-950 font-extrabold text-xs uppercase tracking-wider transition shadow-lg shadow-emerald-500/10"
+        >
+          Contactar por WhatsApp
+        </a>
+      </div>
+
+      <!-- Mapa Embebido -->
+      <div class="md:col-span-7 bg-[#072140] rounded-3xl overflow-hidden border border-sky-400/20 min-h-[420px] shadow-2xl relative">
+        <iframe
+          title="Mapa Puerto Sira"
+          src="https://maps.google.com/maps?q=Puerto%20Sira,%20Puerto%20Inca,%20Huanuco&t=&z=14&ie=UTF8&iwloc=&output=embed"
+          class="w-full h-full min-h-[420px] border-0"
+          loading="lazy"
+          allowfullscreen
+        ></iframe>
+      </div>
+    </div>
+  </section>
+</PublicLayout>

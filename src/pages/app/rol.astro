@@ -1,0 +1,473 @@
+---
+import AppLayout from '../../layout/AppLayout.astro';
+import { createSupabaseServerClient } from '../../lib/supabase';
+
+const supabase = createSupabaseServerClient(Astro);
+const { data: roles } = await supabase.rpc('listarrol');
+---
+
+<AppLayout>
+  <!-- DataTables & Buttons CSS -->
+  <link rel="stylesheet" href="https://cdn.datatables.net/1.13.7/css/jquery.dataTables.min.css" />
+  <link rel="stylesheet" href="https://cdn.datatables.net/buttons/2.4.2/css/buttons.dataTables.min.css" />
+
+  <div class="space-y-6 max-w-7xl mx-auto p-2 md:p-6">
+    
+    <!-- Header -->
+    <div class="flex flex-col md:flex-row md:items-center md:justify-between gap-4 bg-white p-6 rounded-2xl shadow-xs border border-slate-200">
+      <div>
+        <div class="flex items-center gap-2 text-xs font-semibold text-slate-400 uppercase tracking-wider mb-1">
+          <span>Configuración</span>
+          <span class="text-xs">›</span>
+          <span class="text-[#031530] font-bold">Roles</span>
+        </div>
+        <h1 class="text-2xl font-bold text-slate-800 tracking-tight flex items-center gap-2">
+          👤 Gestión de Roles
+        </h1>
+        <p class="text-sm text-slate-500 mt-1">
+          Administra los roles del sistema, exporta reportes y gestiona sus accesos.
+        </p>
+      </div>
+      <div>
+        <button 
+          id="btnNuevoRol"
+          class="flex items-center gap-2 bg-[#031530] hover:bg-slate-800 text-white font-semibold py-2.5 px-5 rounded-xl shadow-xs transition duration-200 cursor-pointer text-sm"
+        >
+          <span>➕</span> Nuevo Rol
+        </button>
+      </div>
+    </div>
+
+    <!-- Contenedor DataTables -->
+    <div class="bg-white rounded-2xl shadow-xs border border-slate-200 p-6 space-y-4">
+      <div class="overflow-x-auto">
+        <table id="tblRoles" class="w-full text-left border-collapse text-sm display">
+          <thead>
+            <tr class="bg-slate-50 text-slate-600 font-semibold uppercase tracking-wider">
+              <th class="py-3 px-4 hidden">ID</th>
+              <th class="py-3 px-4">Nombre de Rol</th>
+              <th class="py-3 px-4 text-center w-36">Estado</th>
+              <th class="py-3 px-4 text-center w-48">Acciones</th>
+            </tr>
+          </thead>
+          <tbody class="divide-y divide-slate-100">
+            {roles && roles.map((r: any) => (
+              <tr class="hover:bg-slate-50/80 transition">
+                <td class="hidden">{r.idrol}</td>
+                <td class="py-3 px-4 font-bold text-slate-800">{r.rol}</td>
+                
+                <!-- ESTADO: Protegido si idrol <= 5 -->
+                <td class="py-3 px-4 text-center w-36">
+                  {r.idrol <= 5 ? (
+                    <span class="inline-block px-3 py-1 text-xs font-semibold rounded-full bg-emerald-100/80 text-emerald-800 border border-emerald-300/60 cursor-not-allowed">
+                      Activo
+                    </span>
+                  ) : (
+                    <button 
+                      class="btn-estado inline-block px-3 py-1 text-xs font-semibold rounded-full cursor-pointer transition border shadow-2xs"
+                      class:list={[
+                        r.estado 
+                          ? 'bg-emerald-100/80 text-emerald-800 border-emerald-300/70 hover:bg-emerald-200' 
+                          : 'bg-rose-100/80 text-rose-800 border-rose-300/70 hover:bg-rose-200'
+                      ]}
+                      data-id={r.idrol}
+                      data-rol={r.rol}
+                      data-estado={r.estado}
+                    >
+                      {r.estado ? 'Activo' : 'Inactivo'}
+                    </button>
+                  )}
+                </td>
+
+                <!-- ACCIONES -->
+                <td class="py-3 px-4 text-center w-48 space-x-2">
+                  {r.idrol <= 5 ? (
+                    <span class="inline-flex items-center gap-1 text-xs font-medium text-slate-400 bg-slate-100 px-3 py-1.5 rounded-full border border-slate-200">
+                      🔒 Sistema
+                    </span>
+                  ) : (
+                    <>
+                      <button 
+                        class="btn-editar bg-blue-500 hover:bg-blue-600 text-white px-3.5 py-1.5 rounded-full text-xs font-semibold transition cursor-pointer shadow-xs"
+                        data-id={r.idrol}
+                        data-rol={r.rol}
+                        data-estado={r.estado}
+                      >
+                        ✏️ Editar
+                      </button>
+
+                      <button 
+                        class="btn-eliminar bg-rose-500 hover:bg-rose-600 text-white px-3.5 py-1.5 rounded-full text-xs font-semibold transition cursor-pointer shadow-xs"
+                        data-id={r.idrol}
+                        data-rol={r.rol}
+                      >
+                        🗑️ Eliminar
+                      </button>
+                    </>
+                  )}
+                </td>
+              </tr>
+            ))}
+          </tbody>
+        </table>
+      </div>
+    </div>
+
+  </div>
+
+  <!-- MODAL DE REGISTRO / EDICIÓN -->
+  <div id="modalRol" class="fixed inset-0 z-50 flex items-center justify-center bg-slate-900/40 backdrop-blur-xs hidden transition-opacity">
+    <div class="bg-white rounded-2xl shadow-xl border border-slate-200 w-full max-w-md mx-4 overflow-hidden">
+      <div class="bg-slate-50 px-6 py-4 border-b border-slate-100 flex items-center justify-between">
+        <h3 id="modalTitle" class="text-lg font-bold text-slate-800">Nuevo Rol</h3>
+        <button id="btnCerrarModal" class="text-slate-400 hover:text-slate-600 text-xl font-bold cursor-pointer">&times;</button>
+      </div>
+
+      <form id="formRolModal" class="p-6 space-y-4">
+        <input type="hidden" id="txtIdRol" value="" />
+
+        <div>
+          <label for="txtNombreRol" class="block text-sm font-semibold text-slate-700 mb-1">Nombre del Rol:</label>
+          <input 
+            type="text" 
+            id="txtNombreRol" 
+            required 
+            placeholder="Ej. Coordinador..." 
+            class="w-full border border-slate-300 rounded-xl px-4 py-2.5 bg-slate-50 focus:bg-white text-slate-800 focus:ring-2 focus:ring-[#031530] outline-none transition text-sm"
+          />
+        </div>
+
+        <div id="divEstadoModal" class="hidden">
+          <label for="cboEstadoModal" class="block text-sm font-semibold text-slate-700 mb-1">Estado:</label>
+          <select 
+            id="cboEstadoModal" 
+            class="w-full border border-slate-300 rounded-xl px-4 py-2.5 bg-white text-slate-800 focus:ring-2 focus:ring-[#031530] outline-none text-sm"
+          >
+            <option value="true">Activo</option>
+            <option value="false">Inactivo</option>
+          </select>
+        </div>
+
+        <div class="flex justify-end gap-3 pt-4 border-t border-slate-100">
+          <button type="button" id="btnCancelarModal" class="bg-slate-100 hover:bg-slate-200 text-slate-700 font-semibold py-2 px-4 rounded-xl transition cursor-pointer text-sm">Cancelar</button>
+          <button type="submit" class="bg-[#031530] hover:bg-slate-800 text-white font-semibold py-2 px-5 rounded-xl transition shadow-xs cursor-pointer text-sm">Guardar</button>
+        </div>
+      </form>
+    </div>
+  </div>
+
+  <!-- MODAL DE CONFIRMACIÓN CUSTOM -->
+  <div id="modalConfirmacion" class="fixed inset-0 z-50 flex items-center justify-center bg-slate-900/40 backdrop-blur-xs hidden transition-opacity">
+    <div class="bg-white rounded-2xl shadow-xl border border-slate-200 w-full max-w-sm mx-4 p-6 text-center space-y-4">
+      <div id="confirmIconContainer" class="w-12 h-12 rounded-full mx-auto flex items-center justify-center text-xl border">
+        ⚠️
+      </div>
+      <div>
+        <h3 id="confirmTitle" class="text-lg font-bold text-slate-800">Confirmar acción</h3>
+        <p id="confirmMessage" class="text-sm text-slate-500 mt-1">¿Está seguro de proceder?</p>
+      </div>
+      <div class="flex justify-center gap-3 pt-2">
+        <button id="btnConfirmCancelar" class="bg-slate-100 hover:bg-slate-200 text-slate-700 font-semibold py-2 px-4 rounded-xl transition text-sm cursor-pointer">Cancelar</button>
+        <button id="btnConfirmAceptar" class="font-semibold py-2 px-5 rounded-xl transition text-sm cursor-pointer text-white shadow-xs">Confirmar</button>
+      </div>
+    </div>
+  </div>
+
+</AppLayout>
+
+<!-- Scripts Datatables & ColVis -->
+<script is:inline src="https://code.jquery.com/jquery-3.7.0.min.js"></script>
+<script is:inline src="https://cdn.datatables.net/1.13.7/js/jquery.dataTables.min.js"></script>
+<script is:inline src="https://cdn.datatables.net/buttons/2.4.2/js/dataTables.buttons.min.js"></script>
+<script is:inline src="https://cdn.datatables.net/buttons/2.4.2/js/buttons.colVis.min.js"></script>
+<script is:inline src="https://cdnjs.cloudflare.com/ajax/libs/jszip/3.10.1/jszip.min.js"></script>
+<script is:inline src="https://cdnjs.cloudflare.com/ajax/libs/pdfmake/0.1.53/pdfmake.min.js"></script>
+<script is:inline src="https://cdnjs.cloudflare.com/ajax/libs/pdfmake/0.1.53/vfs_fonts.js"></script>
+<script is:inline src="https://cdn.datatables.net/buttons/2.4.2/js/buttons.html5.min.js"></script>
+<script is:inline src="https://cdn.datatables.net/buttons/2.4.2/js/buttons.print.min.js"></script>
+
+<style is:global>
+  /* DataTables Buttons Principales */
+  .dt-buttons {
+    display: flex !important;
+    gap: 0.6rem !important;
+    margin-bottom: 1.25rem !important;
+    flex-wrap: wrap;
+  }
+
+  /* Solo dar formato a los botones principales de la barra superior */
+  .dt-buttons > .dt-button {
+    background-image: none !important;
+    border: none !important;
+    border-radius: 9999px !important;
+    padding: 0.45rem 1.1rem !important;
+    font-weight: 600 !important;
+    font-size: 0.8125rem !important;
+    color: white !important;
+    transition: all 0.2s ease-in-out !important;
+    box-shadow: 0 1px 3px 0 rgba(0, 0, 0, 0.1) !important;
+    cursor: pointer !important;
+  }
+
+  /* 📊 Excel (Verde) */
+  .dt-buttons > .dt-button.btn-excel { background-color: #10b981 !important; }
+  .dt-buttons > .dt-button.btn-excel:hover { background-color: #059669 !important; }
+
+  /* 📄 PDF (Rojo) */
+  .dt-buttons > .dt-button.btn-pdf { background-color: #ef4444 !important; }
+  .dt-buttons > .dt-button.btn-pdf:hover { background-color: #dc2626 !important; }
+
+  /* 📋 Copiar (Azul) */
+  .dt-buttons > .dt-button.btn-copy { background-color: #3b82f6 !important; }
+  .dt-buttons > .dt-button.btn-copy:hover { background-color: #2563eb !important; }
+
+  /* 🖨️ Imprimir (Gris) */
+  .dt-buttons > .dt-button.btn-print { background-color: #64748b !important; }
+  .dt-buttons > .dt-button.btn-print:hover { background-color: #475569 !important; }
+
+  /* 👁️ Visibilidad (Morado) */
+  .dt-buttons > .dt-button.btn-colvis { background-color: #8b5cf6 !important; }
+  .dt-buttons > .dt-button.btn-colvis:hover { background-color: #7c3aed !important; }
+
+  /* FIX COLVIS: Estilo del menú desplegable de Visibilidad */
+  div.dt-button-collection {
+    background-color: #ffffff !important;
+    border-radius: 1rem !important;
+    padding: 0.5rem !important;
+    border: 1px solid #e2e8f0 !important;
+    box-shadow: 0 10px 25px -5px rgba(0, 0, 0, 0.1), 0 8px 10px -6px rgba(0, 0, 0, 0.1) !important;
+  }
+
+  div.dt-button-collection .dt-button {
+    background: transparent !important;
+    color: #334155 !important;
+    border-radius: 0.5rem !important;
+    padding: 0.5rem 1rem !important;
+    font-size: 0.8125rem !important;
+    font-weight: 500 !important;
+    text-align: left !important;
+    box-shadow: none !important;
+    margin: 2px 0 !important;
+  }
+
+  div.dt-button-collection .dt-button:hover {
+    background-color: #f1f5f9 !important;
+    color: #0f172a !important;
+  }
+
+  div.dt-button-collection .dt-button.active {
+    background-color: #f8fafc !important;
+    color: #8b5cf6 !important;
+    font-weight: 700 !important;
+  }
+
+  /* Campo de Búsqueda DataTables */
+  .dataTables_wrapper .dataTables_filter input {
+    border: 1px solid #cbd5e1 !important;
+    border-radius: 0.75rem !important;
+    padding: 0.4rem 0.8rem !important;
+    outline: none !important;
+  }
+</style>
+
+<script>
+  declare const $: any;
+
+  document.addEventListener('DOMContentLoaded', () => {
+    // Inicializar DataTables
+    $('#tblRoles').DataTable({
+      language: {
+        url: 'https://cdn.datatables.net/plug-ins/1.13.7/i18n/es-ES.json'
+      },
+      dom: 'Bfrtip',
+      buttons: [
+        { extend: 'excelHtml5', text: '📊 Excel', className: 'btn-excel', exportOptions: { columns: [1, 2] } },
+        { extend: 'pdfHtml5', text: '📄 PDF', className: 'btn-pdf', exportOptions: { columns: [1, 2] } },
+        { extend: 'copyHtml5', text: '📋 Copiar', className: 'btn-copy', exportOptions: { columns: [1, 2] } },
+        { extend: 'print', text: '🖨️ Imprimir', className: 'btn-print', exportOptions: { columns: [1, 2] } },
+        { 
+          extend: 'colvis', 
+          text: '👁️ Visibilidad', 
+          className: 'btn-colvis',
+          // 🛡️ IMPORTANTE: Solo se permite conmutar la columna 2 (Estado). 
+          // Oculta ID (0), Nombre de Rol (1) y Acciones (3) del dropdown de Colvis.
+          columns: [2] 
+        }
+      ]
+    });
+
+    // Modales
+    const modalRol = document.getElementById('modalRol');
+    const modalTitle = document.getElementById('modalTitle');
+    const formRolModal = document.getElementById('formRolModal') as HTMLFormElement;
+    const txtIdRol = document.getElementById('txtIdRol') as HTMLInputElement;
+    const txtNombreRol = document.getElementById('txtNombreRol') as HTMLInputElement;
+    const cboEstadoModal = document.getElementById('cboEstadoModal') as HTMLSelectElement;
+    const divEstadoModal = document.getElementById('divEstadoModal');
+    
+    // Modal Confirmación Custom
+    const modalConfirmacion = document.getElementById('modalConfirmacion');
+    const confirmTitle = document.getElementById('confirmTitle');
+    const confirmMessage = document.getElementById('confirmMessage');
+    const confirmIconContainer = document.getElementById('confirmIconContainer');
+    const btnConfirmCancelar = document.getElementById('btnConfirmCancelar');
+    const btnConfirmAceptar = document.getElementById('btnConfirmAceptar');
+
+    let accionPendiente: (() => Promise<void>) | null = null;
+
+    const mostrarConfirmacion = (titulo: string, mensaje: string, esPeligroso: boolean, accion: () => Promise<void>) => {
+      if (confirmTitle) confirmTitle.textContent = titulo;
+      if (confirmMessage) confirmMessage.textContent = mensaje;
+      
+      if (confirmIconContainer) {
+        confirmIconContainer.className = `w-12 h-12 rounded-full mx-auto flex items-center justify-center text-xl border ${
+          esPeligroso ? 'bg-rose-50 text-rose-600 border-rose-200' : 'bg-amber-50 text-amber-600 border-amber-200'
+        }`;
+        confirmIconContainer.textContent = esPeligroso ? '🗑️' : '🔄';
+      }
+
+      if (btnConfirmAceptar) {
+        btnConfirmAceptar.className = `font-semibold py-2 px-5 rounded-xl transition text-sm cursor-pointer text-white shadow-2xs ${
+          esPeligroso ? 'bg-rose-600 hover:bg-rose-700' : 'bg-amber-600 hover:bg-amber-700'
+        }`;
+      }
+
+      accionPendiente = accion;
+      modalConfirmacion?.classList.remove('hidden');
+    };
+
+    btnConfirmCancelar?.addEventListener('click', () => {
+      modalConfirmacion?.classList.add('hidden');
+      accionPendiente = null;
+    });
+
+    btnConfirmAceptar?.addEventListener('click', async () => {
+      if (accionPendiente) {
+        await accionPendiente();
+        modalConfirmacion?.classList.add('hidden');
+        accionPendiente = null;
+      }
+    });
+
+    // Abrir Modal Crear
+    document.getElementById('btnNuevoRol')?.addEventListener('click', () => {
+      txtIdRol.value = '';
+      txtNombreRol.value = '';
+      if (modalTitle) modalTitle.textContent = 'Nuevo Rol';
+      if (divEstadoModal) divEstadoModal.classList.add('hidden');
+      modalRol?.classList.remove('hidden');
+    });
+
+    const cerrarModal = () => modalRol?.classList.add('hidden');
+    document.getElementById('btnCerrarModal')?.addEventListener('click', cerrarModal);
+    document.getElementById('btnCancelarModal')?.addEventListener('click', cerrarModal);
+
+    // Guardar (Crear / Actualizar)
+    formRolModal?.addEventListener('submit', async (e) => {
+      e.preventDefault();
+      const idrol = txtIdRol.value;
+      const rol = txtNombreRol.value.trim();
+      const estado = cboEstadoModal.value === 'true';
+
+      const isEdit = idrol !== '';
+      const method = isEdit ? 'PUT' : 'POST';
+      const bodyData = isEdit ? { idrol: parseInt(idrol), rol, estado } : { rol };
+
+      try {
+        const res = await fetch('/api/rol', {
+          method,
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify(bodyData)
+        });
+
+        const result = await res.json();
+        if (result.success) {
+          cerrarModal();
+          location.reload();
+        } else {
+          alert('Error: ' + result.message);
+        }
+      } catch (err) {
+        alert('Error de conexión.');
+      }
+    });
+
+    // Editar
+    $('#tblRoles tbody').on('click', '.btn-editar', function () {
+      const id = $(this).attr('data-id');
+      const nombre = $(this).attr('data-rol');
+      const estado = $(this).attr('data-estado') === 'true';
+
+      txtIdRol.value = id;
+      txtNombreRol.value = nombre;
+      cboEstadoModal.value = estado ? 'true' : 'false';
+
+      if (modalTitle) modalTitle.textContent = 'Editar Rol';
+      if (divEstadoModal) divEstadoModal.classList.remove('hidden');
+      modalRol?.classList.remove('hidden');
+    });
+
+    // Eliminar con confirmación
+    $('#tblRoles tbody').on('click', '.btn-eliminar', function () {
+      const id = $(this).attr('data-id');
+      const nombre = $(this).attr('data-rol');
+
+      mostrarConfirmacion(
+        'Eliminar Rol',
+        `¿Deseas eliminar permanentemente el rol "${nombre}"?`,
+        true,
+        async () => {
+          try {
+            const res = await fetch('/api/rol', {
+              method: 'DELETE',
+              headers: { 'Content-Type': 'application/json' },
+              body: JSON.stringify({ idrol: parseInt(id) })
+            });
+
+            const result = await res.json();
+            if (result.success) {
+              location.reload();
+            } else {
+              alert('Error al eliminar: ' + result.message);
+            }
+          } catch (err) {
+            alert('Error de red.');
+          }
+        }
+      );
+    });
+
+    // Cambiar Estado con confirmación
+    $('#tblRoles tbody').on('click', '.btn-estado', function () {
+      const id = $(this).attr('data-id');
+      const nombre = $(this).attr('data-rol');
+      const estadoActual = $(this).attr('data-estado') === 'true';
+      const nuevoEstado = !estadoActual;
+
+      mostrarConfirmacion(
+        'Cambiar Estado',
+        `¿Deseas cambiar el estado del rol "${nombre}" a ${nuevoEstado ? 'Activo' : 'Inactivo'}?`,
+        false,
+        async () => {
+          try {
+            const res = await fetch('/api/rol', {
+              method: 'PATCH',
+              headers: { 'Content-Type': 'application/json' },
+              body: JSON.stringify({ idrol: parseInt(id), estado: nuevoEstado })
+            });
+
+            const result = await res.json();
+            if (result.success) {
+              location.reload();
+            } else {
+              alert('Error al cambiar estado: ' + result.message);
+            }
+          } catch (err) {
+            alert('Error de red.');
+          }
+        }
+      );
+    });
+
+  });
+</script>

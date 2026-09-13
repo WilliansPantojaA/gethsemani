@@ -1,0 +1,31 @@
+# Dependencias (No se suben, Vercel las instala automáticamente)
+node_modules/
+
+# Archivos de compilación de Astro y Vite
+dist/
+.astro/
+
+# Variables de entorno y secretos (¡SÚPER IMPORTANTE!)
+.env
+.env.*
+!.env.example
+
+# Logs de errores y paquetes
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+pnpm-debug.log*
+
+# Archivos del sistema operativo
+.DS_Store
+Thumbs.db
+
+# Configuración local de IDEs y editores
+.vscode/*
+!.vscode/extensions.json
+.idea/
+*.suo
+*.ntvs*
+*.njsproj
+*.sln
+*.sw?

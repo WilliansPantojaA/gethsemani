@@ -1,0 +1,165 @@
+---
+// src/layouts/AppLayout.astro
+import '../styles/global.css';
+
+// Estructura de menús de prueba
+const menusEstaticos = [
+  {
+    idmenu: 1,
+    menu: 'Dashboard',
+    submenus: [
+      { idsubmenu: 1, submenu: 'Inicio', vista: '/app' }
+    ]
+  },
+  {
+    idmenu: 2,
+    menu: 'Gestión Académica',
+    submenus: [
+      { idsubmenu: 2, submenu: 'Estudiantes', vista: '/app/estudiantes' },
+      { idsubmenu: 3, submenu: 'Docentes', vista: '/app/docentes' },
+      { idsubmenu: 4, submenu: 'Cursos', vista: '/app/cursos' }
+    ]
+  },
+  {
+    idmenu: 3,
+    menu: 'Matrículas',
+    submenus: [
+      { idsubmenu: 5, submenu: 'Gestión de Matrículas', vista: '/app/matricula' }
+    ]
+  },
+  {
+    idmenu: 4,
+    menu: 'Configuración',
+    submenus: [
+      { idsubmenu: 7, submenu: 'Roles', vista: '/app/rol' },
+      { idsubmenu: 8, submenu: 'Permisos', vista: '/app/permiso' }
+    ]
+  }
+];
+
+// Separar en 2 grupos:
+// 1. Accesos Directos: Tienen exactamente 1 submenú
+const menusDirectos = menusEstaticos.filter(item => item.submenus.length === 1);
+
+// 2. Desplegables: Tienen más de 1 submenú
+const menusDesplegables = menusEstaticos.filter(item => item.submenus.length > 1);
+
+const usuarioSimulado = {
+  nombre: 'Willians Pantoja',
+  rol: 'Administrador'
+};
+---
+
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Intranet - IEP Gethsemani</title>
+  <script src="https://cdn.tailwindcss.com"></script>
+  <script defer src="https://cdn.jsdelivr.net/npm/alpinejs@3.x.x/dist/cdn.min.js"></script>
+</head>
+<body class="bg-slate-100 min-h-screen flex text-slate-800" x-data="{ sidebarOpen: true }">
+
+  <!-- Sidebar Lateral -->
+  <aside 
+    :class="sidebarOpen ? 'w-64' : 'w-20'" 
+    class="bg-[#031530] text-slate-200 min-h-screen transition-all duration-300 flex flex-col justify-between p-4 sticky top-0 h-screen shrink-0 z-30 shadow-xl"
+  >
+    <div>
+      <!-- Header Sidebar -->
+      <div class="flex items-center justify-between pb-5 border-b border-slate-700/60">
+        <div class="flex items-center gap-3 overflow-hidden" x-show="sidebarOpen">
+          <img src="/logo-gethsemani.png" class="w-8 h-8 object-contain shrink-0" alt="Logo" />
+          <span class="font-bold text-sm tracking-wide whitespace-nowrap text-white">IEP Gethsemani</span>
+        </div>
+        <button 
+          @click="sidebarOpen = !sidebarOpen" 
+          class="p-2 rounded-lg bg-slate-800 hover:bg-slate-700 text-slate-300 transition mx-auto"
+          title="Contraer / Expandir"
+        >
+          <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 6h16M4 12h16M4 18h16"></path>
+          </svg>
+        </button>
+      </div>
+
+      <!-- Menú Lateral -->
+      <nav class="mt-6 space-y-6">
+        
+        <!-- BLOQUE 1: MENÚS DIRECTOS (Sin desplegable / 1 solo submenú) -->
+        <div class="space-y-1">
+          {menusDirectos.map((item) => (
+            <a 
+              href={item.submenus[0].vista} 
+              class="flex items-center gap-3 px-3 py-2.5 rounded-xl hover:bg-slate-800 text-slate-300 hover:text-white text-sm font-medium transition group"
+            >
+              <span class="text-yellow-400 font-bold group-hover:scale-110 transition-transform">📌</span>
+              <span x-show="sidebarOpen" class="whitespace-nowrap">{item.menu}</span>
+            </a>
+          ))}
+        </div>
+
+        <!-- SEPARADOR VISUAL -->
+        {menusDesplegables.length > 0 && (
+          <div class="border-t border-slate-700/50 my-2"></div>
+        )}
+
+        <!-- BLOQUE 2: MENÚS DESPLEGABLES (A partir de 2 o más submenús) -->
+        <div class="space-y-1">
+          {menusDesplegables.map((item) => (
+            <div x-data="{ open: false }">
+              <button 
+                @click="open = !open" 
+                class="w-full flex items-center justify-between px-3 py-2.5 rounded-xl hover:bg-slate-800 text-slate-300 hover:text-white text-sm font-medium transition"
+              >
+                <div class="flex items-center gap-3">
+                  <span class="text-yellow-400 font-bold">📁</span>
+                  <span x-show="sidebarOpen" class="whitespace-nowrap">{item.menu}</span>
+                </div>
+                <span 
+                  x-show="sidebarOpen" 
+                  :class="open ? 'rotate-180' : ''" 
+                  class="transition-transform duration-200 text-xs text-slate-400"
+                >
+                  ▼
+                </span>
+              </button>
+
+              <!-- Submenús colapsables -->
+              <div x-show="open && sidebarOpen" class="pl-8 space-y-1 mt-1">
+                {item.submenus.map((sub) => (
+                  <a 
+                    href={sub.vista} 
+                    class="block px-3 py-2 rounded-lg text-xs text-slate-400 hover:text-white hover:bg-slate-800/60 transition"
+                  >
+                    {sub.submenu}
+                  </a>
+                ))}
+              </div>
+            </div>
+          ))}
+        </div>
+
+      </nav>
+    </div>
+
+    <!-- Perfil de Usuario en Footer del Sidebar -->
+    <div class="pt-4 border-t border-slate-700/60 flex items-center gap-3">
+      <div class="w-9 h-9 rounded-full bg-yellow-400 text-[#031530] font-bold flex items-center justify-center shrink-0 shadow-md">
+        {usuarioSimulado.nombre.charAt(0)}
+      </div>
+      <div x-show="sidebarOpen" class="overflow-hidden">
+        <p class="text-xs font-bold text-white truncate">{usuarioSimulado.nombre}</p>
+        <p class="text-[10px] text-yellow-400 font-semibold uppercase">{usuarioSimulado.rol}</p>
+      </div>
+    </div>
+  </aside>
+
+  <!-- Contenido de la Vista Principal -->
+  <main class="flex-1 p-8 overflow-y-auto">
+    <slot />
+  </main>
+
+</body>
+</html>

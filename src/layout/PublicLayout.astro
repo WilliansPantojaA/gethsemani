@@ -1,0 +1,76 @@
+---
+import '../styles/global.css';
+
+interface Props {
+  title?: string;
+}
+
+const { title = 'IEP Gethsemani' } = Astro.props;
+const currentPath = Astro.url.pathname;
+---
+
+<!DOCTYPE html>
+<html lang="es" class="scroll-smooth">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>{title}</title>
+  </head>
+  <body class="bg-gradient-to-b from-[#091E3A] via-[#0A2B56] to-[#091E3A] text-white min-h-screen flex flex-col font-sans antialiased">
+    <!-- Navbar con el tono Azul Medio exacto -->
+    <header class="w-full bg-[#091E3A]/90 backdrop-blur-md sticky top-0 z-50 border-b border-sky-500/20 shadow-lg">
+      <div class="max-w-7xl mx-auto px-6 h-20 flex items-center justify-between">
+        <!-- Logo Institucional -->
+        <a href="/" class="flex items-center gap-3 group">
+          <div class="w-11 h-11 bg-white rounded-xl p-1 flex items-center justify-center shadow-md">
+            <img src="/logo-gethsemani.png" alt="Logo Gethsemani" class="w-full h-full object-contain" />
+          </div>
+          <div>
+            <span class="font-extrabold text-lg tracking-wider block text-white leading-none">GETHSEMANI</span>
+            <span class="text-[10px] text-sky-200 font-medium">Institución Educativa Particular</span>
+          </div>
+        </a>
+
+        <!-- Menú de Navegación -->
+        <nav class="hidden md:flex items-center gap-7 text-sm font-medium">
+          <a href="/historia" class={currentPath === '/historia' ? 'text-yellow-400 font-bold border-b-2 border-yellow-400 pb-1' : 'text-slate-200 hover:text-white transition'}>
+            Nuestra Historia
+          </a>
+          <a href="/identidad" class={currentPath === '/identidad' ? 'text-yellow-400 font-bold border-b-2 border-yellow-400 pb-1' : 'text-slate-200 hover:text-white transition'}>
+            Nuestra Identidad
+          </a>
+          <a href="/propuesta" class={currentPath === '/propuesta' ? 'text-yellow-400 font-bold border-b-2 border-yellow-400 pb-1' : 'text-slate-200 hover:text-white transition'}>
+            Propuesta Educativa
+          </a>
+          <a href="/ubicacion" class={currentPath === '/ubicacion' ? 'text-yellow-400 font-bold border-b-2 border-yellow-400 pb-1' : 'text-slate-200 hover:text-white transition'}>
+            Ubicación
+          </a>
+          <a href="/login" class="ml-2 px-6 py-2.5 rounded-full bg-yellow-400 hover:bg-yellow-300 text-slate-950 transition duration-300 font-extrabold text-xs tracking-wider uppercase flex items-center gap-2 shadow-lg shadow-yellow-500/10">
+            Intranet &rarr;
+          </a>
+        </nav>
+      </div>
+    </header>
+
+    <main class="flex-1">
+      <slot />
+    </main>
+
+    <!-- Footer Global -->
+    <footer class="bg-[#051326] border-t border-sky-500/20 py-8 px-6 text-xs text-sky-200/70">
+      <div class="max-w-7xl mx-auto flex flex-col md:flex-row items-center justify-between gap-4">
+        <div class="flex items-center gap-3">
+          <div class="w-8 h-8 bg-white rounded-lg p-1 flex items-center justify-center">
+            <img src="/logo-gethsemani.png" alt="Logo" class="w-full h-full object-contain" />
+          </div>
+          <div>
+            <p class="font-bold text-white text-sm">GETHSEMANI</p>
+            <p class="text-[11px] text-sky-300">Puerto Sira · Huánuco</p>
+          </div>
+        </div>
+        <p class="text-center md:text-left">Formando con valores morales y disciplina para el futuro de la comunidad.</p>
+        <p class="text-white font-medium">© IEP Gethsemani</p>
+      </div>
+    </footer>
+  </body>
+</html>
