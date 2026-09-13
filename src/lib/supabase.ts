@@ -10,12 +10,11 @@ interface CookieToSet {
 }
 
 export const createSupabaseServerClient = (context: AstroContext) => {
-  // Lectura estándar y oficial de Astro
-  const supabaseUrl = import.meta.env.PUBLIC_SUPABASE_URL;
-  const supabaseAnonKey = import.meta.env.PUBLIC_SUPABASE_ANON_KEY;
+  const supabaseUrl = import.meta.env.PUBLIC_SUPABASE_URL || "";
+  const supabaseAnonKey = import.meta.env.PUBLIC_SUPABASE_ANON_KEY || "";
 
   if (!supabaseUrl || !supabaseAnonKey) {
-    throw new Error('Las variables PUBLIC_SUPABASE_URL y PUBLIC_SUPABASE_ANON_KEY no están definidas.');
+    console.error("⚠️ Error: Las variables de entorno de Supabase no están cargadas.");
   }
 
   return createServerClient(
@@ -28,7 +27,11 @@ export const createSupabaseServerClient = (context: AstroContext) => {
         },
         setAll(cookiesToSet: CookieToSet[]) {
           cookiesToSet.forEach(({ name, value, options }) => {
-            context.cookies.set(name, value, options);
+            try {
+              context.cookies.set(name, value, options);
+            } catch (e) {
+              // Evita que caiga el servidor si se intenta escribir cookies en estático
+            }
           });
         },
       },
