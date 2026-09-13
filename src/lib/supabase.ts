@@ -10,12 +10,12 @@ interface CookieToSet {
 }
 
 export const createSupabaseServerClient = (context: AstroContext) => {
-  // Obtiene las variables primero de import.meta.env y de fallback process.env (Vercel SSR)
-  const supabaseUrl = import.meta.env.PUBLIC_SUPABASE_URL || process.env.PUBLIC_SUPABASE_URL;
-  const supabaseAnonKey = import.meta.env.PUBLIC_SUPABASE_ANON_KEY || process.env.PUBLIC_SUPABASE_ANON_KEY;
+  // Lectura estándar y oficial de Astro
+  const supabaseUrl = import.meta.env.PUBLIC_SUPABASE_URL;
+  const supabaseAnonKey = import.meta.env.PUBLIC_SUPABASE_ANON_KEY;
 
   if (!supabaseUrl || !supabaseAnonKey) {
-    throw new Error('Las credenciales de Supabase no están definidas en las variables de entorno.');
+    throw new Error('Las variables PUBLIC_SUPABASE_URL y PUBLIC_SUPABASE_ANON_KEY no están definidas.');
   }
 
   return createServerClient(
