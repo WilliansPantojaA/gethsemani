@@ -23,7 +23,17 @@ const navLinks = [
   <head>
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>{title}</title>
+    <!-- Título y Descripción Básica para Google -->
+  <title>{title}</title>
+  <meta name="description" content="I.E.P. Gethsemani en Puerto Sira, Huánuco. Educación Básica Regular (Primaria y Secundaria) con formación en valores morales, disciplina y ecoeficiencia. Directora: Prof. María Inca Paredes." />
+  <meta name="keywords" content="Gethsemani, IEP Gethsemani, colegio Puerto Sira, colegio Puerto Inca, matricula Huánuco, educación primaria secundaria Puerto Sira" />
+  <meta name="robots" content="index, follow" />
+
+  <!-- Open Graph (Para cuando compartes el enlace por WhatsApp o Facebook) -->
+  <meta property="og:title" content={title} />
+  <meta property="og:description" content="Formando líderes con valores morales y excelencia académica en Puerto Sira, Huánuco." />
+  <meta property="og:image" content="https://gethsemani.vercel.app/logo-gethsemani.png" />
+  <meta property="og:type" content="website" />
   </head>
   <body class="bg-gradient-to-b from-[#091E3A] via-[#0A2B56] to-[#091E3A] text-white min-h-screen flex flex-col font-sans antialiased">
     
