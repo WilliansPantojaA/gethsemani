@@ -1,0 +1,79 @@
+---
+import PublicLayout from '../layout/PublicLayout.astro';
+
+const requisitos = [
+  "Copia de DNI del estudiante y de los padres/apoderados",
+  "Ficha Única de Matrícula (SIAGIE)",
+  "Certificado de estudios de los años anteriores",
+  "Constancia de no adeudo del colegio de procedencia",
+  "02 fotos tamaño carnet del estudiante"
+];
+---
+
+<PublicLayout title="Admisión & Matrícula | IEP Gethsemani">
+  <section class="py-16 px-6 max-w-7xl mx-auto w-full space-y-12">
+    
+    <!-- Header -->
+    <div class="text-center max-w-3xl mx-auto space-y-4">
+      <span class="text-xs font-bold text-yellow-400 uppercase tracking-widest px-4 py-1.5 bg-yellow-400/10 rounded-full border border-yellow-400/20 inline-block">
+        Proceso de Matrícula
+      </span>
+      <h1 class="text-4xl sm:text-5xl font-extrabold text-white tracking-tight">
+        Únete a la Familia Gethsemani
+      </h1>
+      <p class="text-slate-300 text-base leading-relaxed">
+        Formamos líderes con valores morales, excelencia académica y conciencia ambiental en Puerto Sira.
+      </p>
+    </div>
+
+    <!-- Grid de Niveles y Requisitos -->
+    <div class="grid grid-cols-1 lg:grid-cols-2 gap-8">
+      
+      <!-- Card Requisitos -->
+      <div class="bg-[#051326]/80 border border-sky-500/20 rounded-3xl p-8 space-y-6">
+        <h2 class="text-2xl font-bold text-yellow-400 flex items-center gap-3">
+          <span>📋</span> Requisitos de Matrícula
+        </h2>
+        <ul class="space-y-3">
+          {requisitos.map((req) => (
+            <li class="flex items-start gap-3 text-sm text-slate-200">
+              <span class="text-yellow-400 font-bold">✓</span>
+              <span>{req}</span>
+            </li>
+          ))}
+        </ul>
+      </div>
+
+      <!-- Card Niveles y Vacantes -->
+      <div class="bg-[#051326]/80 border border-sky-500/20 rounded-3xl p-8 space-y-6 flex flex-col justify-between">
+        <div class="space-y-4">
+          <h2 class="text-2xl font-bold text-white flex items-center gap-3">
+            <span>🏫</span> Niveles Académicos
+          </h2>
+          <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
+            <div class="bg-[#091E3A] p-4 rounded-2xl border border-sky-500/10">
+              <h3 class="font-bold text-yellow-400 text-lg">Primaria</h3>
+              <p class="text-xs text-slate-300 mt-1">Formación en competencias clave y valores morales.</p>
+            </div>
+            <div class="bg-[#091E3A] p-4 rounded-2xl border border-sky-500/10">
+              <h3 class="font-bold text-yellow-400 text-lg">Secundaria</h3>
+              <p class="text-xs text-slate-300 mt-1">Razonamiento científico y proyección preuniversitaria.</p>
+            </div>
+          </div>
+        </div>
+
+        <div class="pt-4 border-t border-sky-500/20 text-center">
+          <a 
+            href="https://wa.me/51925363317?text=Deseo%20información%20sobre%20el%20proceso%20de%20matrícula" 
+            target="_blank"
+            class="inline-flex items-center justify-center gap-2 w-full py-4 rounded-2xl bg-emerald-500 hover:bg-emerald-400 text-slate-950 font-extrabold text-sm uppercase tracking-wider transition shadow-lg shadow-emerald-500/20"
+          >
+            <span>💬 Consultar Vacantes por WhatsApp</span>
+          </a>
+        </div>
+      </div>
+
+    </div>
+
+  </section>
+</PublicLayout>

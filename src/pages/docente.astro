@@ -1,0 +1,94 @@
+---
+import PublicLayout from '../layout/PublicLayout.astro';
+
+const equipo = [
+  {
+    nombre: "Prof. María Inca Paredes",
+    cargo: "Directora General",
+    nivel: "Dirección Institucional",
+    descripcion: "Líder pedagógica encargada de la excelencia académica, gestión institucional y formación en valores morales.",
+    destacado: true,
+    iniciales: "MI"
+  },
+  {
+    nombre: "Coordinación de Primaria",
+    cargo: "Tutoría & Lectoescritura",
+    nivel: "Nivel Primaria",
+    descripcion: "Especialistas en la consolidación del pensamiento lógico y desarrollo integral de los niños.",
+    destacado: false,
+    iniciales: "CP"
+  },
+  {
+    nombre: "Coordinación de Secundaria",
+    cargo: "Ciencias & Matemáticas",
+    nivel: "Nivel Secundaria",
+    descripcion: "Docentes enfocados en razonamiento científico, proyecto personal y ética escolar.",
+    destacado: false,
+    iniciales: "CS"
+  },
+  {
+    nombre: "Área Ecoeficiente & Valores",
+    cargo: "Desarrollo Sostenible",
+    nivel: "Transversal",
+    descripcion: "Promotores del cuidado ambiental, desarrollo ecológico y compromiso con Puerto Sira.",
+    destacado: false,
+    iniciales: "DS"
+  }
+];
+---
+
+<PublicLayout title="Plana Docente | IEP Gethsemani">
+  <section class="py-16 px-6 max-w-7xl mx-auto w-full space-y-12">
+    
+    <!-- Encabezado -->
+    <div class="text-center max-w-3xl mx-auto space-y-4">
+      <span class="text-xs font-bold text-yellow-400 uppercase tracking-widest px-4 py-1.5 bg-yellow-400/10 rounded-full border border-yellow-400/20 inline-block">
+        Acompañamiento Pedagógico
+      </span>
+      <h1 class="text-4xl sm:text-5xl font-extrabold text-white tracking-tight">
+        Nuestra Plana Docente
+      </h1>
+      <p class="text-slate-300 text-base leading-relaxed">
+        Equipo de educadores orientados al acompañamiento tutorial y la formación integral en Puerto Sira.
+      </p>
+    </div>
+
+    <!-- Grid -->
+    <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6">
+      {equipo.map((docente) => (
+        <div class={`rounded-3xl p-6 text-center shadow-xl transition-all duration-300 group flex flex-col items-center justify-between relative overflow-hidden ${
+          docente.destacado 
+            ? 'bg-[#051326]/90 border-2 border-yellow-400/60 hover:border-yellow-400' 
+            : 'bg-[#051326]/60 border border-sky-500/20 hover:border-sky-400/50'
+        }`}>
+          
+          <div>
+            <div class="absolute top-3 right-3 bg-yellow-400/20 text-yellow-300 border border-yellow-400/30 text-[10px] font-bold px-2.5 py-0.5 rounded-full uppercase tracking-wider">
+              {docente.nivel}
+            </div>
+
+            <div class={`w-24 h-24 rounded-2xl p-1 mb-4 shadow-lg mx-auto group-hover:scale-105 transition-transform duration-300 ${
+              docente.destacado ? 'bg-gradient-to-tr from-yellow-400 to-amber-200' : 'bg-slate-800'
+            }`}>
+              <div class="w-full h-full bg-[#091E3A] rounded-[14px] flex items-center justify-center overflow-hidden">
+                <span class={`text-2xl font-black ${docente.destacado ? 'text-yellow-400' : 'text-sky-200'}`}>
+                  {docente.iniciales}
+                </span>
+              </div>
+            </div>
+
+            <h3 class="font-bold text-lg text-white group-hover:text-yellow-400 transition">
+              {docente.nombre}
+            </h3>
+            <p class="text-xs font-semibold text-sky-300 mb-3">{docente.cargo}</p>
+            <p class="text-xs text-slate-400 leading-relaxed">
+              {docente.descripcion}
+            </p>
+          </div>
+
+        </div>
+      ))}
+    </div>
+
+  </section>
+</PublicLayout>
